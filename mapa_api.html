@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zxx">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Mapa de Radiobases Telefónicas en Bolivia">
+    <meta name="keywords" content="Radiobases, Mapa, OpenCellID">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Radio Bases | Bolivia</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Css Styles -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="css/elegant-icons.css" type="text/css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css">
+    <link rel="stylesheet" href="css/magnific-popup.css" type="text/css">
+    <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+
+    
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 700px;
+            width: 75%; /* Ajustar para que el mapa no ocupe todo el ancho */
+            float: left;
+        }
+        #panel {
+            position: absolute;
+            top: 39%; /* Puedes ajustar este valor */
+            right: 0%;  /* Mueve el panel hacia la derecha */
+            left: 70%;
+            width: 25%;
+            height: 700px;
+            padding: 30px;
+            background-color: #f8f9fa;
+            box-shadow: 2px 0px 10px rgba(0,0,0,0.1);
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        .form-control {
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;  /* Se ajusta al ancho del contenedor */
+            min-height: 100px;  /* Altura mínima */
+            padding: 10px;  /* Espaciado interno */
+            font-size: 1rem;  /* Tamaño de fuente */
+            box-sizing: border-box;  /* Asegura que el padding no afecte el ancho total */
+            resize: none;  /* Desactiva el redimensionamiento manual */
+        }
+
+        .blinking-marker {
+            width: 185px; /* Aumentar el tamaño */
+            height: 185px; /* Aumentar el tamaño */
+            background-color: red;
+            border-radius: 50%; /* Ajuste para que siga siendo un círculo */
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section Begin -->
+    <header class="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-2">
+                    <div class="header__logo">  
+                        <a href="./index.html"><img src="img/unifranz_logo.png" alt=""></a>
+                    </div>
+                </div>
+                <div class="col-lg-10">
+                    <div class="header__nav__option">
+                        <nav class="header__nav__menu mobile-menu">
+                            <ul>
+                                <li><a href="./index.html">Home</a></li>
+                                <li><a href="./about.html">About</a></li>
+                                <li class="active"><a href="./mapa_api.html">Mapa Api</a></li>
+                                <li><a href="./services.html">Educativo</a></li>
+                                <li><a href="./contact.html">Contactános</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Header End -->
+
+    <!-- Breadcrumb Begin -->
+    <div class="breadcrumb-option spad set-bg" data-setbg="img/breadcrumb-bg.jpg">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <div class="breadcrumb__text">
+                        <h2>Mapa de Radio Bases en Bolivia</h2>
+                        <div class="breadcrumb__links">
+                            <a href="#">Home</a>
+                            <span>Mapa Api</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Breadcrumb End -->
+
+    <!-- Mapa Section Begin -->
+    <section class="portfolio spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div id="map"></div>
+                </div>
+                <div id="panel">
+                    <h3 class="panel-title">Buscar Radiobase</h3>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Buscar radiobase...">
+                    <h3 class="panel-title">Información de Radiobase</h3>
+                    <textarea id="infoText" class="form-control" readonly></textarea>
+
+                    <!-- Buscador de Historial de Llamadas -->
+                    <h3 class="panel-title">Buscar RadioBase por "Longitud, Latitud"</h3>
+                    <input type="text" id="searchPhone" class="form-control" placeholder="Buscar radiobase Longitud, Latitud...">
+                    <button id="searchCallButton" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Buscar</button>
+                    <h3 class="panel-title">Información de la Radiobase por coordenada</h3>
+                    <textarea id="callInfoText" class="form-control" readonly></textarea>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Mapa Section End -->
+
+    <!-- Footer Section Begin -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__top">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6">
+                        <div class="footer__top__logo">
+                            <h2 class="text-white">Datos Importantes</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer__option">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 col-sm-6">
+                        <div class="footer__option__item">
+                            <h5>Información</h5>
+                            <p>Este Proyecto se realizo con el fin educativo, para la presentación en la materia de Sistemas de Comunicaciones Hito 3.</p>
+                            <a href="#" class="read__more">Volver Arriba <span class="arrow_right"></span></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-3">
+                        <div class="footer__option__item">
+                            <h5>Estudiante</h5>
+                            <ul>
+                                <li><a href="#">Carmelo Enrique Meza</a></li>
+                                <li><a href="#">Ingeniería de Sistemas</a></li>
+                                <li><a href="#">Examen - Hito 3</a></li>
+                                <li><a href="#">Chuturubi Technology</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-3">
+                        <div class="footer__option__item">
+                            <h5>Docente</h5>
+                            <ul>
+                                <li><a href="#">Jorge Terrazas Chaly</a></li>
+                                <li><a href="#">Sistemas de Comunicaciones</a></li>
+                                <li><a href="#">Redes 1</a></li>
+                                <li><a href="#">Redes 2</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-12">
+                        <div class="footer__option__item">
+                            <h5>Materia</h5>
+                            <p>Sistemas de Comunicaciones.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer__copyright">
+                <div class="row">
+                    <div class="col-lg-12 text-center">
+                        <p class="footer__copyright__text">
+                            Copyright &copy; <script>document.write(new Date().getFullYear());</script> 
+                            All rights reserved | Radio Bases Bolivia <i class="" aria-hidden="true"></i> by 
+                            <a href="https://github.com/carmelo2000" target="_blank">Carmelo Enrique Meza</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Footer Section End -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script>
+        
+        // Inicializar el mapa
+        var map = L.map('map').setView([-15.0, -60.0], 4);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Variables para rastrear el marcador previo y las capas del mapa
+        var previousMarker = null;
+        var drawnLayers = [];
+
+        // Función para limpiar las capas del mapa
+        function clearMap() {
+            drawnLayers.forEach(layer => map.removeLayer(layer));
+            drawnLayers = [];
+        }
+
+        // Función para agregar marcadores y calcular distancias
+        function addMarkersAndDistances(towers) {
+            previousMarker = null;
+
+            towers.forEach(function(tower) {
+                var blinkingIcon = L.divIcon({
+                    className: 'blinking-marker' // Clase CSS que define el estilo parpadeante
+                });
+
+                var marker = L.marker([tower.latitude, tower.longitude], { icon: blinkingIcon }).addTo(map);
+                marker.bindPopup(`<b>Proveedor:</b> ${tower.provider}<br><b>Tipo:</b> ${tower.type}`);
+                drawnLayers.push(marker);
+
+                marker.on('click', function() {
+                    // Actualizar el cuadro de texto con la información de la radiobase seleccionada
+                    document.getElementById('infoText').value = `Proveedor: ${tower.provider}\nTipo: ${tower.type}\nLat: ${tower.latitude}\nLng: ${tower.longitude}`;
+                });
+
+                // Calcular distancia y dibujar líneas si hay un marcador previo
+                if (previousMarker) {
+                    var previousLatLng = L.latLng(previousMarker.getLatLng());
+                    var currentLatLng = L.latLng(tower.latitude, tower.longitude);
+                    var distance = previousLatLng.distanceTo(currentLatLng);
+
+                    // Dibujar línea entre marcadores
+                    var line = L.polyline([previousLatLng, currentLatLng], { color: 'blue' }).addTo(map);
+                    drawnLayers.push(line);
+
+                    // Mostrar distancia en el centro de la línea
+                    var midPoint = [
+                        (previousLatLng.lat + currentLatLng.lat) / 2,
+                        (previousLatLng.lng + currentLatLng.lng) / 2
+                    ];
+
+                    var distanceMarker = L.marker(midPoint, {
+                        icon: L.divIcon({
+                            className: 'distance-label',
+                            html: `<div style="background: white; padding: 5px; border: 1px solid black;">${(distance / 1000).toFixed(2)} km</div>`
+                        })
+                    }).addTo(map);
+
+                    drawnLayers.push(distanceMarker);
+                }
+
+                // Guardar el marcador actual como el anterior
+                previousMarker = marker;
+            });
+        }
+
+
+        // Datos simulados de radiobases
+        const cellTowers = [
+    // Radiobases de Bolivia
+                { id: 1, latitude: -16.5037, longitude: -68.1319, type: 'GSM', provider: 'Viva' },
+                { id: 2, latitude: -17.7833, longitude: -63.1833, type: 'LTE', provider: 'Entel' },
+                { id: 3, latitude: -19.0333, longitude: -65.2617, type: '3G', provider: 'Tigo' },
+                { id: 4, latitude: -17.7333, longitude: -64.1167, type: '4G', provider: 'Viva' },
+                { id: 5, latitude: -17.9933, longitude: -67.1333, type: 'LTE', provider: 'Entel' },
+                { id: 6, latitude: -15.5078, longitude: -68.6808, type: '3G', provider: 'Tigo' },
+                { id: 7, latitude: -14.8333, longitude: -66.8333, type: 'GSM', provider: 'Viva' },
+                { id: 8, latitude: -18.3893, longitude: -66.1606, type: '4G', provider: 'Entel' },
+                { id: 9, latitude: -21.5375, longitude: -64.7296, type: 'LTE', provider: 'Tigo' },
+                { id: 10, latitude: -20.2167, longitude: -67.7333, type: 'GSM', provider: 'Viva' },
+                { id: 11, latitude: -16.3333, longitude: -68.0333, type: '3G', provider: 'Entel' },
+                { id: 12, latitude: -17.6167, longitude: -63.4667, type: '4G', provider: 'Tigo' },
+                { id: 13, latitude: -18.0000, longitude: -65.0000, type: 'LTE', provider: 'Viva' },
+                { id: 14, latitude: -19.5833, longitude: -65.7500, type: '3G', provider: 'Entel' },
+                { id: 15, latitude: -14.8333, longitude: -66.7000, type: '4G', provider: 'Tigo' },
+                { id: 16, latitude: -16.8997, longitude: -65.2625, type: 'LTE', provider: 'Viva' },
+                { id: 17, latitude: -17.5327, longitude: -68.0817, type: '3G', provider: 'Entel' },
+                { id: 18, latitude: -16.6430, longitude: -68.2313, type: '4G', provider: 'Tigo' },
+                { id: 19, latitude: -14.2900, longitude: -67.5011, type: 'GSM', provider: 'Viva' },
+                { id: 20, latitude: -13.6833, longitude: -65.5833, type: 'LTE', provider: 'Entel' },
+
+                // Radiobases de Argentina
+                { id: 21, latitude: -34.6037, longitude: -58.3816, type: '4G', provider: 'Claro' },
+                { id: 22, latitude: -32.9468, longitude: -60.6393, type: '3G', provider: 'Movistar' },
+                { id: 23, latitude: -31.4201, longitude: -64.1888, type: 'LTE', provider: 'Personal' },
+                { id: 24, latitude: -26.8167, longitude: -65.2167, type: '4G', provider: 'Claro' },
+                { id: 25, latitude: -27.4514, longitude: -58.9869, type: 'GSM', provider: 'Movistar' },
+                { id: 26, latitude: -24.1864, longitude: -65.2995, type: '3G', provider: 'Personal' },
+                { id: 27, latitude: -34.9214, longitude: -57.9544, type: 'LTE', provider: 'Claro' },
+                { id: 28, latitude: -33.0458, longitude: -60.6404, type: '4G', provider: 'Movistar' },
+                { id: 29, latitude: -36.6167, longitude: -64.2833, type: 'GSM', provider: 'Personal' },
+                { id: 30, latitude: -29.4146, longitude: -66.8556, type: 'LTE', provider: 'Claro' },
+                { id: 31, latitude: -32.9475, longitude: -60.6403, type: '4G', provider: 'Movistar' },
+                { id: 32, latitude: -33.0154, longitude: -60.6445, type: '3G', provider: 'Claro' },
+                { id: 33, latitude: -34.9215, longitude: -57.9544, type: 'GSM', provider: 'Personal' },
+                { id: 34, latitude: -24.1864, longitude: -65.2996, type: 'LTE', provider: 'Movistar' },
+                { id: 35, latitude: -33.0457, longitude: -60.6405, type: '3G', provider: 'Claro' },
+
+                // Radiobases de Brasil
+                { id: 1, latitude: -23.5505, longitude: -46.6333, type: '4G', provider: 'Claro' },
+                { id: 2, latitude: -22.9068, longitude: -43.1729, type: 'LTE', provider: 'TIM' },
+                { id: 3, latitude: -19.9245, longitude: -43.9352, type: '3G', provider: 'Vivo' },
+                { id: 4, latitude: -15.7942, longitude: -47.8822, type: '4G', provider: 'Oi' },
+                { id: 5, latitude: -3.7172, longitude: -38.5433, type: 'LTE', provider: 'Claro' },
+                { id: 6, latitude: -12.9714, longitude: -38.5014, type: 'GSM', provider: 'Vivo' },
+                { id: 7, latitude: -30.0346, longitude: -51.2177, type: '4G', provider: 'TIM' },
+                { id: 8, latitude: -25.4284, longitude: -49.2733, type: 'LTE', provider: 'Oi' },
+                { id: 9, latitude: -16.6869, longitude: -49.2648, type: '3G', provider: 'Claro' },
+                { id: 10, latitude: -1.4558, longitude: -48.5044, type: '4G', provider: 'Vivo' },
+                { id: 11, latitude: -22.9028, longitude: -43.2075, type: 'LTE', provider: 'Claro' },
+                { id: 12, latitude: -23.5500, longitude: -46.6339, type: '3G', provider: 'TIM' },
+                { id: 13, latitude: -15.7797, longitude: -47.9297, type: 'GSM', provider: 'Vivo' },
+                { id: 14, latitude: -8.0476, longitude: -34.8770, type: '4G', provider: 'Oi' },
+                { id: 15, latitude: -2.5307, longitude: -44.3050, type: 'LTE', provider: 'Claro' },
+                { id: 16, latitude: -20.3155, longitude: -40.3128, type: '3G', provider: 'TIM' },
+                { id: 17, latitude: -7.1195, longitude: -34.8450, type: '4G', provider: 'Vivo' },
+                { id: 18, latitude: -5.7945, longitude: -35.2110, type: 'GSM', provider: 'Oi' },
+                { id: 19, latitude: -9.6658, longitude: -35.7350, type: 'LTE', provider: 'Claro' },
+                { id: 20, latitude: -21.1775, longitude: -47.8103, type: '4G', provider: 'TIM' }
+];
+        
+
+
+        // Variables para rastrear el marcador previo y las capas del mapa
+        var previousMarker = null;
+        var drawnLayers = [];
+
+        // Función para limpiar las capas del mapa
+        function clearMap() {
+            drawnLayers.forEach(layer => map.removeLayer(layer));
+            drawnLayers = [];
+        }
+
+        // Función para agregar marcadores y calcular distancias
+        function addMarkersAndDistances(towers) {
+            previousMarker = null;
+
+            towers.forEach(function(tower) {
+                var blinkingIcon = L.divIcon({
+                    className: 'blinking-marker' // Clase CSS que define el estilo parpadeante
+                });
+
+                var marker = L.marker([tower.latitude, tower.longitude], { icon: blinkingIcon }).addTo(map);
+                marker.bindPopup(`<b>Proveedor:</b> ${tower.provider}<br><b>Tipo:</b> ${tower.type}`);
+                drawnLayers.push(marker);
+
+                marker.on('click', function() {
+                    // Actualizar el cuadro de texto con la información de la radiobase seleccionada
+                    document.getElementById('infoText').value = `Proveedor: ${tower.provider}\nTipo: ${tower.type}\nLat: ${tower.latitude}\nLng: ${tower.longitude}`;
+                });
+
+                // Calcular distancia y dibujar líneas si hay un marcador previo
+                if (previousMarker) {
+                    var previousLatLng = L.latLng(previousMarker.getLatLng());
+                    var currentLatLng = L.latLng(tower.latitude, tower.longitude);
+                    var distance = previousLatLng.distanceTo(currentLatLng);
+
+                    // Dibujar línea entre marcadores
+                    var line = L.polyline([previousLatLng, currentLatLng], { color: 'blue' }).addTo(map);
+                    drawnLayers.push(line);
+
+                    // Mostrar distancia en el centro de la línea
+                    var midPoint = [
+                        (previousLatLng.lat + currentLatLng.lat) / 2,
+                        (previousLatLng.lng + currentLatLng.lng) / 2
+                    ];
+
+                    var distanceMarker = L.marker(midPoint, {
+                        icon: L.divIcon({
+                            className: 'distance-label',
+                            html: `<div style="background: white; padding: 5px; border: 1px solid black;">${(distance / 1000).toFixed(2)} km</div>`
+                        })
+                    }).addTo(map);
+
+                    drawnLayers.push(distanceMarker);
+                }
+
+                // Guardar el marcador actual como el anterior
+                previousMarker = marker;
+            });
+        }
+
+        // Agregar todos los marcadores inicialmente
+        addMarkersAndDistances(cellTowers);
+
+        // Función para buscar radiobases por nombre de proveedor
+        document.getElementById('searchInput').addEventListener('input', function(event) {
+            var searchTerm = event.target.value.toLowerCase();
+            var filteredTowers = cellTowers.filter(tower => tower.provider.toLowerCase().includes(searchTerm));
+
+            // Limpiar el mapa y agregar los marcadores filtrados
+            clearMap();
+            addMarkersAndDistances(filteredTowers);
+
+            // Búsqueda de Radiobases por teléfono
+        document.getElementById('searchCallButton').addEventListener('click', function() {
+            var phoneNumber = document.getElementById('searchPhone').value;
+            // Aquí iría la lógica para buscar el historial de llamadas y mostrar la información
+            document.getElementById('callInfoText').value = 'Información de la llamada para el número: ' + phoneNumber;
+            // Datos de ejemplo de radiobases con números telefónicos asociados
+const cellTowers = [
+    {
+        provider: "Vivo",
+        type: "4G",
+        latitude: -7.1195,
+        longitude: -34.8450,
+        phoneNumber: "1234567890"
+    },
+    {
+        provider: "Proveedor 2",
+        type: "Tipo B",
+        latitude: 19.4356,
+        longitude: -99.1300,
+        phoneNumber: "0987654321"
+    }
+];
+        });
+        });
+    </script>
+
+    <!-- Js Plugins -->
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.magnific-popup.min.js"></script>
+    <script src="js/jquery.slicknav.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
+
